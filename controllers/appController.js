@@ -1,3 +1,8 @@
+import bcrypt from "bcrypt";
+
+// Models
+import UserModel from "../model/User.model.js";
+
 /**
  * POST: http://localhost:8080/api/v1/register
  * @param : {
@@ -12,7 +17,51 @@
  * }
  */
 const register = async (req, res) => {
-  res.json({ message: "Register users" });
+  try {
+    const { username, password, profile, email } = req.body;
+
+    // Check if user already exists
+    const existUsername = await UserModel.findOne({ username });
+
+    if (existUsername) {
+      return res.status(400).json({ message: "Username already exists" });
+    }
+
+    // Check if email already exists
+    const existEmail = await UserModel.findOne({ email });
+
+    if (existEmail) {
+      return res.status(400).json({ message: "Email already exists" });
+    }
+
+    if (password && username && email) {
+      // Hash password
+      const salt = await bcrypt.genSalt(10);
+      const passwordHashed = await bcrypt.hash(password, salt);
+
+      // Create new user
+      const user = await UserModel.create({
+        username,
+        password: passwordHashed,
+        profile,
+        email,
+      });
+
+      // Return data without password
+      return res.status(201).json({
+        message: "User created successfully",
+        // Exclude password
+        data: {
+          username: user.username,
+          email: user.email,
+        },
+      });
+    }
+
+    return res.status(400).json({ message: "Please provide all the fields" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
 };
 
 /**
