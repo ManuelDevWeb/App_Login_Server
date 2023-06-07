@@ -143,7 +143,7 @@ const getUser = async (req, res) => {
 };
 
 /**
- * GET: http://localhost:8080/api/v1/update-user
+ * PUT: http://localhost:8080/api/v1/update-user
  * @param : {
  * "id": "<userid>",
  * }
@@ -156,7 +156,28 @@ const getUser = async (req, res) => {
  * }
  */
 const updateUser = async (req, res) => {
-  res.json({ message: "Update User" });
+  try {
+    const id = req.query.id;
+
+    if (id) {
+      console.log(id);
+      const body = req.body;
+
+      const userUpdated = await UserModel.updateOne({ _id: id }, body);
+
+      if (!userUpdated) {
+        return res.status(400).json({ message: "User not updated" });
+      }
+
+      return res.status(200).json({
+        message: "User updated successfully",
+      });
+    } else {
+      return res.status(401).json({ message: "User not found" });
+    }
+  } catch (error) {
+    return res.status(401).json({ message: "User not found" });
+  }
 };
 
 /**
