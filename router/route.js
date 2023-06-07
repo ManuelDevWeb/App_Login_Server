@@ -12,6 +12,9 @@ import {
   resetPassword,
 } from "../controllers/appController.js";
 
+// Middlewares
+import { verifyUser } from "../middleware/index.js";
+
 const router = Router();
 
 /** POST Methods */
@@ -30,7 +33,7 @@ router.post("/authenticate", (req, res) => {
 });
 
 // Login in App
-router.post("/login", login);
+router.post("/login", verifyUser, login);
 
 /** GET Methods */
 

@@ -1,4 +1,6 @@
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import ENV from "../config.js";
 
 // Models
 import UserModel from "../model/User.model.js";
@@ -43,17 +45,24 @@ const register = async (req, res) => {
       const user = await UserModel.create({
         username,
         password: passwordHashed,
-        profile,
+        profile: profile || "",
         email,
       });
 
-      // Return data without password
+      const userSaved = await user.save();
+
+      // Check if user is saved
+      if (!userSaved) {
+        return res.status(400).json({ message: "User not created" });
+      }
+
       return res.status(201).json({
         message: "User created successfully",
         // Exclude password
         data: {
           username: user.username,
           email: user.email,
+          profile: user.profile,
         },
       });
     }
@@ -72,7 +81,36 @@ const register = async (req, res) => {
  * }
  */
 const login = async (req, res) => {
-  res.json({ message: "Login" });
+  const { username, password } = req.body;
+
+  try {
+    // Check if user exists
+    const user = await UserModel.findOne({ username });
+
+    // Verify password
+    const passwordCorrect = await bcrypt.compare(password, user.password);
+
+    if (!passwordCorrect) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // Create JWT token
+    const token = jwt.sign(
+      { userId: user._id, username: user.username },
+      ENV.JWT_SECRET,
+      {
+        expiresIn: "24h",
+      }
+    );
+
+    return res.status(200).json({
+      message: "User logged successfully",
+      username: user.username,
+      token,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
 };
 
 /**

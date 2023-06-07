@@ -1,0 +1,3 @@
+export default {
+  JWT_SECRET: "AF5CVAFVG673HBDF4V7JL9KHALL91",
+};
