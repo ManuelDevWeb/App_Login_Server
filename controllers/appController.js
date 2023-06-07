@@ -38,7 +38,9 @@ const register = async (req, res) => {
 
     if (password && username && email) {
       // Hash password
+
       const salt = await bcrypt.genSalt(10);
+
       const passwordHashed = await bcrypt.hash(password, salt);
 
       // Create new user
@@ -58,11 +60,10 @@ const register = async (req, res) => {
 
       return res.status(201).json({
         message: "User created successfully",
-        // Exclude password
-        data: {
-          username: user.username,
-          email: user.email,
-          profile: user.profile,
+        user: {
+          username: userSaved.username,
+          email: userSaved.email,
+          profile: userSaved.profile,
         },
       });
     }
@@ -114,10 +115,31 @@ const login = async (req, res) => {
 };
 
 /**
- * GET: http://localhost:8080/api/v1/user/:username
+ * GET: http://localhost:8080/api/v1/user/exampleUser
  */
 const getUser = async (req, res) => {
-  res.json({ message: "Get User" });
+  const { username } = req.params;
+
+  try {
+    if (!username) {
+      return res.status(501).json({ message: "Invalid Username" });
+    }
+
+    const user = await UserModel.findOne({ username });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Exclude password and version
+    const { password, __v, ...data } = user._doc;
+
+    return res.status(200).json({
+      user: data,
+    });
+  } catch (error) {
+    return res.status(404).json({ message: "User not found" });
+  }
 };
 
 /**
