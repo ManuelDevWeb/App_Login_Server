@@ -39,9 +39,7 @@ const register = async (req, res) => {
 
     if (password && username && email) {
       // Hash password
-
       const salt = await bcrypt.genSalt(10);
-
       const passwordHashed = await bcrypt.hash(password, salt);
 
       // Create new user
@@ -199,7 +197,16 @@ const generateOTP = async (req, res) => {
  * GET: http://localhost:8080/api/v1/verifyOTP
  */
 const verifyOTP = async (req, res) => {
-  res.json({ message: "Verify OTP" });
+  const { code } = req.query;
+
+  if (parseInt(req.app.locals.OTP) === parseInt(code)) {
+    req.app.locals.OTP = null; // Reset OTP value
+    req.app.locals.resetSession = true; // Start session for reset password
+
+    return res.status(201).json({ message: "Verify successfully" });
+  }
+
+  return res.status(400).json({ message: "Invalid OTP" });
 };
 
 // Successfully redirect user when OTP is valid
@@ -207,7 +214,14 @@ const verifyOTP = async (req, res) => {
  * GET: http://localhost:8080/api/v1/create-reset-session
  */
 const createResetSession = async (req, res) => {
-  res.json({ message: "Create Reset Session" });
+  if (req.app.locals.resetSession) {
+    req.app.locals.resetSession = false; // Allow access to this route only once
+    return res
+      .status(201)
+      .json({ message: "Reset session created successfully" });
+  }
+
+  return res.status(440).json({ message: "Session expired" });
 };
 
 // Update password when we have valid session
@@ -215,7 +229,40 @@ const createResetSession = async (req, res) => {
  * PUT: http://localhost:8080/api/v1/reset-password
  */
 const resetPassword = async (req, res) => {
-  res.json({ message: "Reset Password" });
+  try {
+    if (!req.app.locals.resetSession) {
+      return res.status(440).json({ message: "Session expired" });
+    }
+
+    const { username, password } = req.body;
+
+    const user = await UserModel.findOne({ username });
+
+    if (!user) {
+      return res.status(404).json({ message: "Username not found" });
+    }
+
+    req.app.locals.resetSession = false; // Reset session
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const passwordHashed = await bcrypt.hash(password, salt);
+
+    const userUpdated = await UserModel.updateOne(
+      { username: user.username },
+      { password: passwordHashed }
+    );
+
+    if (!userUpdated) {
+      return res.status(400).json({ message: "User not updated" });
+    }
+
+    return res.status(200).json({
+      message: "Password updated successfully",
+    });
+  } catch (error) {
+    return res.status(401).json({ message: error.message });
+  }
 };
 
 export {

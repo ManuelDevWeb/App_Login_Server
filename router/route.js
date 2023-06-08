@@ -16,6 +16,9 @@ import {
 import { verifyUser } from "../middleware/index.js";
 import { Auth, localVariables } from "../middleware/auth.js";
 
+// Email
+import { registerMail } from "../controllers/mailer.js";
+
 const router = Router();
 
 /** POST Methods */
@@ -24,9 +27,7 @@ const router = Router();
 router.post("/register", register);
 
 // Send Mail
-// router.post("/register-mail", (req, res) => {
-//   res.json({ message: "Register Mail" });
-// });
+router.post("/register-mail", registerMail);
 
 // Authenticate User
 router.post("/authenticate", (req, res) => {
@@ -56,6 +57,6 @@ router.get("/create-reset-session", createResetSession);
 router.put("/update-user", Auth, updateUser);
 
 // Reset Password
-router.put("/reset-password", resetPassword);
+router.put("/reset-password", verifyUser, Auth, resetPassword);
 
 export default router;
