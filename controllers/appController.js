@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import ENV from "../config.js";
+import otpGenerator from "otp-generator";
 
 // Models
 import UserModel from "../model/User.model.js";
@@ -183,7 +184,15 @@ const updateUser = async (req, res) => {
  * GET: http://localhost:8080/api/v1/generateOTP
  */
 const generateOTP = async (req, res) => {
-  res.json({ message: "Generate OTP" });
+  req.app.locals.OTP = await otpGenerator.generate(6, {
+    lowerCaseAlphabets: false,
+    upperCaseAlphabets: false,
+    specialChars: false,
+  });
+
+  res
+    .status(200)
+    .json({ message: "OTP generated successfully", code: req.app.locals.OTP });
 };
 
 /**

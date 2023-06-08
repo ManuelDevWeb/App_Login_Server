@@ -14,7 +14,7 @@ import {
 
 // Middlewares
 import { verifyUser } from "../middleware/index.js";
-import { Auth } from "../middleware/auth.js";
+import { Auth, localVariables } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -42,7 +42,7 @@ router.post("/login", verifyUser, login);
 router.get("/user/:username", getUser);
 
 // Generate random OTP
-router.get("/generateOTP", generateOTP);
+router.get("/generateOTP", verifyUser, localVariables, generateOTP);
 
 // Verify generated OTP
 router.get("/verifyOTP", verifyOTP);

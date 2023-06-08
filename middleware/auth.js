@@ -19,4 +19,13 @@ const Auth = async (req, res, next) => {
   }
 };
 
-export { Auth };
+const localVariables = (req, res, next) => {
+  req.app.locals = {
+    OTP: null,
+    resetSession: false,
+  };
+
+  next();
+};
+
+export { Auth, localVariables };
