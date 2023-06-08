@@ -14,6 +14,7 @@ import {
 
 // Middlewares
 import { verifyUser } from "../middleware/index.js";
+import { Auth } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -52,7 +53,7 @@ router.get("/create-reset-session", createResetSession);
 /** PUT Methods */
 
 // Update user profile
-router.put("/update-user", updateUser);
+router.put("/update-user", Auth, updateUser);
 
 // Reset Password
 router.put("/reset-password", resetPassword);

@@ -157,13 +157,12 @@ const getUser = async (req, res) => {
  */
 const updateUser = async (req, res) => {
   try {
-    const id = req.query.id;
+    const { userId } = req.user;
 
-    if (id) {
-      console.log(id);
+    if (userId) {
       const body = req.body;
 
-      const userUpdated = await UserModel.updateOne({ _id: id }, body);
+      const userUpdated = await UserModel.updateOne({ _id: userId }, body);
 
       if (!userUpdated) {
         return res.status(400).json({ message: "User not updated" });
