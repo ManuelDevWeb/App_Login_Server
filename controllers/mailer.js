@@ -15,6 +15,7 @@ let nodeConfig = {
 
 let transporter = nodemailer.createTransport(nodeConfig);
 
+// Configure mailgen by setting a theme and your product info
 let MailGenerator = new Mailgen({
   theme: "default",
   product: {
@@ -27,7 +28,7 @@ export const registerMail = async (req, res) => {
   const { username, userEmail, text, subject } = req.body;
 
   // Body of the email
-  let email = {
+  let infoEmail = {
     body: {
       name: username,
       intro:
@@ -38,7 +39,7 @@ export const registerMail = async (req, res) => {
   };
 
   // Generate an HTML email with the provided contents
-  let emailBody = MailGenerator.generate(email);
+  let emailBody = MailGenerator.generate(infoEmail);
 
   let message = {
     from: ENV.EMAIL,
